@@ -1,0 +1,45 @@
+#!/bin/sh
+
+PATH=/sbin:/bin:/usr/sbin:/usr/bin
+
+pidfile=/var/run/doorbell-service.pid
+rundir=/var/lib/doorbell/
+file=/var/lib/doorbell/doorbell-service.tac
+logfile=/var/log/twisted-doorbell-service.log
+
+# [ -r /etc/default/twisted-doorbell-service ] && . /etc/default/twisted-doorbell-service
+
+test -x /usr/bin/twistd || exit 0
+test -r $file || exit 0
+# test -r /usr/share/twisted-doorbell-service/package-installed || exit 0
+
+
+case "$1" in
+    start)
+        echo -n "Starting twisted-doorbell-service: twistd"
+        start-stop-daemon --start --quiet --exec /usr/bin/twistd -- --pidfile=$pidfile --rundir=$rundir --python=$file --logfile=$logfile
+        echo "."	
+    ;;
+
+    stop)
+        echo -n "Stopping twisted-doorbell-service: twistd"
+        start-stop-daemon --stop --quiet --pidfile $pidfile
+        echo "."	
+    ;;
+
+    restart)
+        $0 stop
+        $0 start
+    ;;
+
+    force-reload)
+        $0 restart
+    ;;
+
+    *)
+        echo "Usage: /etc/init.d/doorbell {start|stop|restart|force-reload}" >&2
+        exit 1
+    ;;
+esac
+
+exit 0
